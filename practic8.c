@@ -21,14 +21,14 @@ int verify_choise_case(int);
 int verify_double(double *);
 int verify_bounds(double, double, double *, double *);
 int verify_double_greater_then_zero(double);
-int verify_step(double, double);
+int verify_step(double, double, int *);
 void clear();
-void assign_variables_for_the_first_complex_equation(double, double, double, double, double);
-void assign_variables_for_the_second_complex_equation(double, double, double, double, double);
-void assign_variables_for_the_third_complex_equation(double, double, double, double, double);
-void assign_variables_for_the_fourth_complex_equation(double, double, double, double, double);
-void calculate_complex_resistance(complex_equations);
-void compute_the_table(double, double, double, double, double, double, int, double, void (*)(double, double, double, double, double), complex_equations);
+void assign_variables_for_the_first_complex_equation(double, double, double, double, double, complex_equations *);
+void assign_variables_for_the_second_complex_equation(double, double, double, double, double, complex_equations *);
+void assign_variables_for_the_third_complex_equation(double, double, double, double, double, complex_equations *);
+void assign_variables_for_the_fourth_complex_equation(double, double, double, double, double, complex_equations *);
+void calculate_complex_resistance(complex_equations *);
+void compute_the_table(double, double, double, double, double, double, int, double, int, void (*)(double, double, double, double, double, complex_equations *), complex_equations *);
 void display_anwer_for_complex_equation(complex_equations);
 
 int main()
@@ -37,7 +37,7 @@ int main()
     do
     {
         double lower_bound, upper_bound, first_bound, second_bound, result, resistance_1, resistance_2, inductance, electric_capacity, step, omega;
-        int choise_scheme, e;
+        int choise_scheme, e, choise_step = 0;
 
         system("cls");
 
@@ -87,26 +87,26 @@ int main()
         do
         {
             printf("Enter step: ");
-        } while ((verify_double(&step) == 1) || (verify_step(step, upper_bound - lower_bound) == 1));
+        } while ((verify_double(&step) == 1) || (verify_step(step, upper_bound - lower_bound, &choise_step) == 1));
         // >>>>Stop entering data!
 
         switch (choise_scheme)
         {
         case 1:
             complex_equations first_equation;
-            compute_the_table(electric_capacity, inductance, lower_bound, upper_bound, resistance_1, resistance_2, choise_scheme, step, assign_variables_for_the_first_complex_equation, first_equation);
+            compute_the_table(electric_capacity, inductance, lower_bound, upper_bound, resistance_1, resistance_2, choise_scheme, step, choise_step, assign_variables_for_the_first_complex_equation, &first_equation);
             break;
         case 2:
             complex_equations second_equation;
-            compute_the_table(electric_capacity, inductance, lower_bound, upper_bound, resistance_1, resistance_2, choise_scheme, step, assign_variables_for_the_second_complex_equation, second_equation);
+            compute_the_table(electric_capacity, inductance, lower_bound, upper_bound, resistance_1, resistance_2, choise_scheme, step, choise_step, assign_variables_for_the_second_complex_equation, &second_equation);
             break;
         case 3:
             complex_equations third_equation;
-            compute_the_table(electric_capacity, inductance, lower_bound, upper_bound, resistance_1, resistance_2, choise_scheme, step, assign_variables_for_the_third_complex_equation, third_equation);
+            compute_the_table(electric_capacity, inductance, lower_bound, upper_bound, resistance_1, resistance_2, choise_scheme, step, choise_step, assign_variables_for_the_third_complex_equation, &third_equation);
             break;
         case 4:
             complex_equations fourth_equation;
-            compute_the_table(electric_capacity, inductance, lower_bound, upper_bound, resistance_1, resistance_2, choise_scheme, step, assign_variables_for_the_fourth_complex_equation, fourth_equation);
+            compute_the_table(electric_capacity, inductance, lower_bound, upper_bound, resistance_1, resistance_2, choise_scheme, step, choise_step, assign_variables_for_the_fourth_complex_equation, &fourth_equation);
             break;
         }
 
@@ -122,53 +122,49 @@ int main()
 // start of the block of assignment-------------->
 
 // add resistance_2 to unify the look of functions that assign variables
-void assign_variables_for_the_first_complex_equation(double inductance, double electric_capacity, double resistance_1, double resistance_2, double omega)
+void assign_variables_for_the_first_complex_equation(double inductance, double electric_capacity, double resistance_1, double resistance_2, double omega, complex_equations *first_equation)
 {
-    complex_equations first_equation;
     // assign variables using given formulas
-    first_equation.real_in_numerator = inductance / electric_capacity;
-    first_equation.real_in_denominator = resistance_1;
-    first_equation.imeginary_in_numerator = ((0 - resistance_1) / (omega * electric_capacity));
-    first_equation.imeginary_in_denominator = (omega * inductance - 1 / (omega * electric_capacity));
+    first_equation->real_in_numerator = inductance / electric_capacity;
+    first_equation->real_in_denominator = resistance_1;
+    first_equation->imeginary_in_numerator = ((0 - resistance_1) / (omega * electric_capacity));
+    first_equation->imeginary_in_denominator = (omega * inductance - 1 / (omega * electric_capacity));
 
     // pass the number/ name of structure of equation
     calculate_complex_resistance(first_equation);
 }
 
-void assign_variables_for_the_second_complex_equation(double inductance, double electric_capacity, double resistance_1, double resistance_2, double omega)
+void assign_variables_for_the_second_complex_equation(double inductance, double electric_capacity, double resistance_1, double resistance_2, double omega, complex_equations *second_equation)
 {
-    complex_equations second_equation;
     // assign variables using given formulas
-    second_equation.real_in_numerator = inductance / electric_capacity;
-    second_equation.real_in_denominator = resistance_1;
-    second_equation.imeginary_in_numerator = resistance_1 / (omega * electric_capacity);
-    second_equation.imeginary_in_denominator = (omega * inductance - 1 / (omega * electric_capacity));
+    second_equation->real_in_numerator = inductance / electric_capacity;
+    second_equation->real_in_denominator = resistance_1;
+    second_equation->imeginary_in_numerator = resistance_1 / (omega * electric_capacity);
+    second_equation->imeginary_in_denominator = (omega * inductance - 1 / (omega * electric_capacity));
 
     // pass the number/ name of structure of equation
     calculate_complex_resistance(second_equation);
 }
 
-void assign_variables_for_the_third_complex_equation(double inductance, double electric_capacity, double resistance_1, double resistance_2, double omega)
+void assign_variables_for_the_third_complex_equation(double inductance, double electric_capacity, double resistance_1, double resistance_2, double omega, complex_equations *third_equation)
 {
-    complex_equations third_equation;
     // assign variables using given formulas
-    third_equation.real_in_numerator = resistance_1 * resistance_2;
-    third_equation.real_in_denominator = resistance_1 * (omega * inductance - 1 / (omega * electric_capacity));
-    third_equation.imeginary_in_numerator = resistance_1 + resistance_2;
-    third_equation.imeginary_in_denominator = (omega * inductance - 1 / (omega * electric_capacity));
+    third_equation->real_in_numerator = resistance_1 * resistance_2;
+    third_equation->real_in_denominator = resistance_1 + resistance_2;
+    third_equation->imeginary_in_numerator = resistance_1 * (omega * inductance - 1 / (omega * electric_capacity));
+    third_equation->imeginary_in_denominator = (omega * inductance - 1 / (omega * electric_capacity));
 
     // pass the number/ name of structure of equation
     calculate_complex_resistance(third_equation);
 }
 
-void assign_variables_for_the_fourth_complex_equation(double inductance, double electric_capacity, double resistance_1, double resistance_2, double omega)
+void assign_variables_for_the_fourth_complex_equation(double inductance, double electric_capacity, double resistance_1, double resistance_2, double omega, complex_equations *fourth_equation)
 {
-    complex_equations fourth_equation;
     // assign variables using given formulas
-    fourth_equation.real_in_numerator = resistance_1 * resistance_2 + inductance / electric_capacity;
-    fourth_equation.real_in_denominator = resistance_1 * (omega * inductance * resistance_1 - resistance_2 / (omega * electric_capacity));
-    fourth_equation.imeginary_in_numerator = resistance_1 + resistance_2;
-    fourth_equation.imeginary_in_denominator = (omega * inductance - 1 / (omega * electric_capacity));
+    fourth_equation->real_in_numerator = resistance_1 * resistance_2 + inductance / electric_capacity;
+    fourth_equation->real_in_denominator = resistance_1 + resistance_2;
+    fourth_equation->imeginary_in_numerator = (omega * inductance * resistance_1 - resistance_2 / (omega * electric_capacity));
+    fourth_equation->imeginary_in_denominator = (omega * inductance - 1 / (omega * electric_capacity));
 
     // pass the number/ name of structure of equation
     calculate_complex_resistance(fourth_equation);
@@ -176,30 +172,47 @@ void assign_variables_for_the_fourth_complex_equation(double inductance, double 
 // finish of the block of assignment  ----------------<
 
 //  function that can calculate the answer for specific name of structure
-void calculate_complex_resistance(complex_equations number_equation)
+void calculate_complex_resistance(complex_equations *number_equation)
 {
     // using general formula calculate separately real number and imaginary one in answer
-    number_equation.real_in_answer = (number_equation.real_in_numerator * number_equation.real_in_denominator + number_equation.imeginary_in_numerator * number_equation.imeginary_in_denominator) / (number_equation.real_in_denominator * number_equation.real_in_denominator + number_equation.imeginary_in_denominator * number_equation.imeginary_in_denominator);
+    number_equation->real_in_answer = (number_equation->real_in_numerator * number_equation->real_in_denominator + number_equation->imeginary_in_numerator * number_equation->imeginary_in_denominator) / (number_equation->real_in_denominator * number_equation->real_in_denominator + number_equation->imeginary_in_denominator * number_equation->imeginary_in_denominator);
 
-    number_equation.real_in_answer = (number_equation.imeginary_in_numerator * number_equation.real_in_denominator - number_equation.real_in_numerator * number_equation.imeginary_in_denominator) / (number_equation.real_in_denominator * number_equation.real_in_denominator + number_equation.imeginary_in_denominator * number_equation.imeginary_in_denominator);
+    number_equation->imeginary_in_answer = (number_equation->imeginary_in_numerator * number_equation->real_in_denominator - number_equation->real_in_numerator * number_equation->imeginary_in_denominator) / (number_equation->real_in_denominator * number_equation->real_in_denominator + number_equation->imeginary_in_denominator * number_equation->imeginary_in_denominator);
 }
 
 // idea is to calculate the table using loop that call function that calculate the specific name of structure
-void compute_the_table(double electric_capacity, double inductance, double lower_bound, double upper_bound, double resistance_1, double resistance_2, int choise_scheme, double step, void (*scheme)(double, double, double, double, double), complex_equations number_equation)
+void compute_the_table(double electric_capacity, double inductance, double lower_bound, double upper_bound, double resistance_1, double resistance_2, int choise_scheme, double step, int choise_step, void (*scheme)(double, double, double, double, double, complex_equations *), complex_equations *number_equation)
 {
     double resonance_frequency, omega;
     resonance_frequency = 1 / (2 * M_PI * sqrt(inductance * electric_capacity));
     printf("Resonance frequency: %e", resonance_frequency);
     printf("\nFrequency\tResistance\n");
 
-    while (lower_bound < upper_bound)
+    while (lower_bound <= upper_bound)
     {
-        omega = 2 * M_PI * lower_bound;
-        (*scheme)(inductance, electric_capacity, resistance_1, resistance_2, omega);
-        printf("%7g\t\t", lower_bound);
-        display_anwer_for_complex_equation(number_equation);
+        if (choise_step == 1)
+        {
+            omega = 2 * M_PI * lower_bound;
+            printf("%7g\t\t", lower_bound);
+        }
+        else
+        {
+            omega = 2 * M_PI * upper_bound;
+            printf("%7g\t\t", upper_bound);
+        }
+        (*scheme)(inductance, electric_capacity, resistance_1, resistance_2, omega, number_equation);
+
+        display_anwer_for_complex_equation(*number_equation);
         printf("\n");
-        lower_bound += step;
+
+        if (choise_step == 1)
+        {
+            lower_bound += step;
+        }
+        else
+        {
+            upper_bound += step;
+        }
     }
 }
 
@@ -278,13 +291,21 @@ int verify_bounds(double var_first, double var_second, double *var_low, double *
     return 1;
 }
 
-int verify_step(double step, double range)
+int verify_step(double step, double range, int *choise_step)
 {
-    if (step > range)
+    if (fabs(step) < range)
     {
-        return 1;
+        if (step > 0)
+        {
+            // in case step is positive
+            *choise_step = 1;
+            return 0;
+        }
+        // in case step is negative
+        *choise_step = 2;
+        return 0;
     }
-    return 0;
+    return 1;
 }
 
 void clear()
